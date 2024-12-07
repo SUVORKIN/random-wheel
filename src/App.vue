@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Колесо без обязательств</h1>
+    <h1>Колесо {{ duration }} - {{ maxRotation }} - {{ rotateAngle }}</h1>
   </div>
 
   <div class="container">
@@ -62,6 +62,7 @@ const maxRotation = ref(0);
 let ctx = {} as CanvasRenderingContext2D;
 const canvas = ref<any | null>(); /* HTMLElement */
 const wheel = ref<any | null>(); /* HTMLElement */
+const fps = 60;
 
 onMounted(() => {
   canvas.value = document.getElementById("canvas");
@@ -91,7 +92,7 @@ const drawItems = computed(() => {
   let endAngle = rotateAngle.value;
   let drawItems: LotData[] = [];
   items.value.forEach((item) => {
-    endAngle += getAngle(item);
+    endAngle += getAngleForItem(item);
     drawItems.push({
       ...item,
       ...{
@@ -137,12 +138,14 @@ const draw = () => {
       ctx.lineTo(cx, cy);
       ctx.closePath();
       ctx.fill();
+
       //   text
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate((item.startAngleRad + item.endAngleRad) / 2);
       ctx.textAlign = "center";
       ctx.fillStyle = "#fff";
+
       //  add color contrast
       ctx.font = "18px sans-serif";
       ctx.fillText(item.name, 100, 5, 170);
@@ -157,43 +160,44 @@ const draw = () => {
     }
   });
 };
-let interval: number | undefined = undefined;
 
 const handleStart = () => {
-  clearInterval(interval);
-  const minValue = rotateAngle.value + 360 * 5;
+  const minValue = rotateAngle.value + 360 * 2;
   const maxValue = rotateAngle.value + 360 * 10;
   maxRotation.value = getRandomRange(minValue, maxValue);
   timeLeft.value = duration.value;
-  interval = setInterval(() => {
+  setTimeout(function repeat() {
     timeLeft.value--;
+    if (timeLeft.value > 0) {
+      setTimeout(repeat, 1000);
+    }
   }, 1000);
   rotate();
 };
 
 const rotate = () => {
-  rotateAngle.value += getSpeed();
   if (timeLeft.value !== 0) {
-    window.requestAnimationFrame(rotate);
-    draw();
+    const speed = getSpeed();
+    rotateAngle.value += speed / fps;
+    setTimeout(() => {
+      window.requestAnimationFrame(rotate);
+      draw();
+    }, 1000 / fps);
   } else {
-    clearInterval(interval);
     timeLeft.value = duration.value;
   }
 };
 
 const getRandomRange = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
-const getRandomColor = () => {
-  const r = Math.floor(Math.random() * 255);
-  const g = Math.floor(Math.random() * 255);
-  const b = Math.floor(Math.random() * 255);
-  return { r, g, b };
+const getSpeed = () => {
+  const speed = maxRotation.value / duration.value;
+  return speed;
 };
 
-const getAngle = (item: LotData) => {
+const getAngleForItem = (item: LotData) => {
   const sum = items.value.reduce((acc, current) => {
     return acc + current.value;
   }, 0);
@@ -201,32 +205,14 @@ const getAngle = (item: LotData) => {
   return (360 * percents) / 100;
 };
 
-const getSpeed = () => {
-  const timePassed = duration.value - timeLeft.value;
-  const timePercentage = (100 * timePassed) / duration.value;
-  // console.log(timePercentage);
-  //
-  // if (timePercentage < 50) {
-  //   return timePercentage / 10 || 1;
-  // } else if (timePercentage > 60) {
-  //   return (100 - timePercentage) / 10;
-  // }
-  console.log(timePercentage/100);
-  return easeInOutQuad(timePercentage / 100);
-};
-
-const easeInOutQuad = (t: number) => {
-  const scaledTime = t * 2;
-  const scaledTime1 = scaledTime - 2;
-
-  if( scaledTime < 1 ) {
-    return -0.5 * ( Math.sqrt( 1 - scaledTime * scaledTime ) - 1 );
-  }
-
-  return 0.5 * ( Math.sqrt( 1 - scaledTime1 * scaledTime1 ) + 1 );
-};
-
 function toRadians(deg: number) {
   return (deg * Math.PI) / 180;
 }
+
+const getRandomColor = () => {
+  const r = Math.floor(Math.random() * 255);
+  const g = Math.floor(Math.random() * 255);
+  const b = Math.floor(Math.random() * 255);
+  return { r, g, b };
+};
 </script>
