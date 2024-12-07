@@ -162,38 +162,42 @@ const draw = () => {
 };
 
 const handleStart = () => {
-  const minValue = rotateAngle.value + 360 * 2;
-  const maxValue = rotateAngle.value + 360 * 10;
+  const minValue = rotateAngle.value + (360 * duration.value) / 2;
+  const maxValue = rotateAngle.value + 360 * duration.value * 2;
   maxRotation.value = getRandomRange(minValue, maxValue);
   timeLeft.value = duration.value;
-  setTimeout(function repeat() {
-    timeLeft.value--;
-    if (timeLeft.value > 0) {
-      setTimeout(repeat, 1000);
-    }
-  }, 1000);
+  const updateInterval = 1000;
+  // setTimeout(function repeat() {
+  //   timeLeft.value--;
+  //   if (timeLeft.value > 0) {
+  //     setTimeout(repeat, updateInterval);
+  //   }
+  // }, updateInterval);
   rotate();
 };
 
 const rotate = () => {
-  if (timeLeft.value !== 0) {
+  if (rotateAngle.value < maxRotation.value) {
     const speed = getSpeed();
-    rotateAngle.value += speed / fps;
+    rotateAngle.value += speed;
     setTimeout(() => {
       window.requestAnimationFrame(rotate);
       draw();
     }, 1000 / fps);
-  } else {
-    timeLeft.value = duration.value;
   }
+  // else {
+  //   timeLeft.value = duration.value;
+  // }
 };
 
 const getRandomRange = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1) + min);
+  return Math.floor(Math.random() * (max - min + 1));
 };
 
 const getSpeed = () => {
-  const speed = maxRotation.value / duration.value;
+  const timeLeftPercent = (100 * timeLeft.value) / duration.value;
+  console.log(timeLeftPercent);
+  const speed = maxRotation.value / duration.value / fps;
   return speed;
 };
 
