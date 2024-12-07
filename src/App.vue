@@ -161,44 +161,39 @@ const draw = () => {
   });
 };
 
+let startTime = ref(0);
 const handleStart = () => {
-  const minValue = rotateAngle.value + (360 * duration.value) / 2;
-  const maxValue = rotateAngle.value + 360 * duration.value * 2;
+  startTime.value = Date.now();
+  const minValue = rotateAngle.value + (360 * duration.value) / 100 / 2;
+  const maxValue = rotateAngle.value + ((360 * duration.value) / 100) * 2;
   maxRotation.value = getRandomRange(minValue, maxValue);
   timeLeft.value = duration.value;
-  const updateInterval = 1000;
-  // setTimeout(function repeat() {
-  //   timeLeft.value--;
-  //   if (timeLeft.value > 0) {
-  //     setTimeout(repeat, updateInterval);
-  //   }
-  // }, updateInterval);
   rotate();
 };
 
 const rotate = () => {
-  if (rotateAngle.value < maxRotation.value) {
-    const speed = getSpeed();
-    rotateAngle.value += speed;
-    setTimeout(() => {
-      window.requestAnimationFrame(rotate);
-      draw();
-    }, 1000 / fps);
+  let t = (Date.now() - startTime.value) / 1000; // Время в секундах
+  timeLeft.value = t;
+  let angle = getAngle(t, maxRotation.value, duration.value / 4);
+
+  if (t > duration.value && angle < 1) {
+    // Колесо остановилось, можно выполнить дополнительные действия
+  } else {
+    // Обновляем позицию колеса, например:
+    rotateAngle.value += (angle * Math.PI) / 180;
+    window.requestAnimationFrame(rotate);
+    draw();
   }
-  // else {
-  //   timeLeft.value = duration.value;
-  // }
 };
+
+function getAngle(t: number, deltaTheta: number, T: number) {
+  return (
+    ((2 * deltaTheta) / Math.PI / T) * (1 - Math.cos((Math.PI * t) / (2 * T)))
+  );
+}
 
 const getRandomRange = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1));
-};
-
-const getSpeed = () => {
-  const timeLeftPercent = (100 * timeLeft.value) / duration.value;
-  console.log(timeLeftPercent);
-  const speed = maxRotation.value / duration.value / fps;
-  return speed;
+  return Math.random() * 360 * duration.value + 1;
 };
 
 const getAngleForItem = (item: LotData) => {
