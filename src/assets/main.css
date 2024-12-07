@@ -1,0 +1,99 @@
+@import './base.css';
+
+#app {
+  padding: 2rem;
+  display: block;
+  width: 100%;
+  font-weight: normal;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+}
+
+body {
+  background: #222222;
+  color: #fff;
+}
+input {
+  padding: 4px;
+  margin: 4px 2px;
+  font-size: 16px;
+  background-color: #2c3e50;
+  color: #fff;
+  border: none;
+}
+
+button {
+  padding: 4px;
+  margin: 0 5px;
+  background: none;
+  border-color: #ff6b6b;
+  color: #f2f2f2;
+  cursor: pointer;
+}
+.mb-2 {
+  margin-bottom: 20px;
+}
+.forms {
+  width: 400px;
+}
+#wheel-content {
+  position: relative;
+  width: 400px;
+  height: 400px;
+}
+
+.canvas {
+  transform: rotate(0deg);
+}
+.arrow {
+  clip-path: polygon(0 92%, 100% 50%, 0 8%);
+  transform: rotate(90deg);
+  position: absolute;
+  top: -32px;
+  background: #ff6b6b;
+  height: 42px;
+  width: 48px;
+  z-index: 99;
+}
+.container {
+  align-items: center;
+  display: flex;
+  width: 100%;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+.wrapper {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.winner {
+  text-align: center;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+    place-items: center;
+  }
+
+  #app {
+    grid-template-columns: 1fr 1fr;
+    padding: 0 2rem;
+  }
+}
+
