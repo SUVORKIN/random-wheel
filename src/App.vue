@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Колесо {{ duration }} - {{ maxRotation }} - {{ rotateAngle }}</h1>
+    <h1>Колесо {{ duration }} | {{ maxRotation }} | {{ rotateAngle }}</h1>
   </div>
 
   <div class="container">
@@ -166,7 +166,7 @@ const handleStart = () => {
   startTime.value = Date.now();
   const minValue = rotateAngle.value + (360 * duration.value) / 100 / 2;
   const maxValue = rotateAngle.value + ((360 * duration.value) / 100) * 2;
-  maxRotation.value = getRandomRange(minValue, maxValue);
+  maxRotation.value = getRandomRange();
   timeLeft.value = duration.value;
   rotate();
 };
@@ -174,7 +174,7 @@ const handleStart = () => {
 const rotate = () => {
   let t = (Date.now() - startTime.value) / 1000; // Время в секундах
   timeLeft.value = t;
-  let angle = getSpeed(t, maxRotation.value, duration.value / 4);
+  let angle = getSpeed(t, maxRotation.value, duration.value);
 
   if (t > duration.value && angle < 1) {
     // Колесо остановилось, можно выполнить дополнительные действия
@@ -188,21 +188,16 @@ const rotate = () => {
 
 const speed = ref(1);
 function getSpeed(t: number, deltaTheta: number, T: number) {
-  // // если времени осталось от 5% до 1% возвращай предыдущее значение
-  // debugger;
-  // const percent = (t / T / 4) * 100;
-  // console.log(percent);
-  // if (percent > 90 && percent < 95) {
-  //   return speed.value;
-  // }
   speed.value =
     ((2 * deltaTheta) / (Math.PI * T)) *
-    (1 - Math.cos((Math.PI * t) / (2 * T)));
-  return speed.value;
+    (1 - Math.sin((Math.PI * t) / (2 * T)) ** 2);
+  return Math.min(speed.value, 720);
 }
 
-const getRandomRange = (min: number, max: number) => {
-  return Math.random() * 360 * duration.value + 1;
+const getRandomRange = () => {
+  const angle = ((Math.random() * 100) / 100) * 360;
+
+  return angle + 360 * duration.value;
 };
 
 const getAngleForItem = (item: LotData) => {
