@@ -1,19 +1,27 @@
 <template>
   <div class="lot-form">
-    <input :id="lotData.id" v-model="name" type="text" autocomplete="false"/>
-    <input :id="value + lotData.id" v-model="value" type="number" />
-    <button @click="saveChanges">
-      <span v-if="!isLast">Save</span>
-      <span v-else>+</span>
+    <div style="min-width: 40px">{{ Math.floor(lotData.winChance) }}%</div>
+    <input :id="lotData.id" v-model="name" type="text" autocomplete="false" />
+    <input
+      v-model="value"
+      :id="value + lotData.id"
+      style="width: 100px"
+      type="number"
+    />
+    <span>+</span>
+    <input v-model="add" style="width: 80px" type="number" />
+    <button :class="saveButtonClasses" @click="saveChanges">
+      <span v-if="!isLast">Сохранить</span>
+      <span v-else>Добавить</span>
     </button>
-    <button>
-      <span @click="handleRemoveClick">-</span>
+    <button v-if="!isLast" @click="handleRemoveClick">
+      <span>-</span>
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import type { LotData } from "@/types";
 
 const props = defineProps<{
@@ -28,7 +36,7 @@ const emit = defineEmits<{
 
 const name = ref(props.lotData.name);
 const value = ref(props.lotData.value);
-
+const add = ref(0);
 const handleRemoveClick = () => {
   emit("remove", props.lotData.id);
 };
@@ -36,17 +44,22 @@ const handleRemoveClick = () => {
 const saveChanges = () => {
   if (name.value) {
     emit("change", {
+      ...props.lotData,
       name: name.value,
-      value: value.value,
-      id: props.lotData.id,
-      color: props.lotData.color,
-      startAngleRad: 0,
-      endAngleRad: 0,
-      endAngle: 0,
-      startAngle: 0,
+      value: value.value + add.value,
     });
+    add.value = 0;
   }
 };
+const isSaved = ref(true);
+watch([value, add, name], () => {
+  isSaved.value = false;
+});
+
+const saveButtonClasses = computed(() => ({
+  "not-saved": !isSaved.value,
+  "add-item": props.isLast,
+}));
 </script>
 
 <style scoped>

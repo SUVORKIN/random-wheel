@@ -7,4 +7,5 @@ export type LotData = {
   startAngle: number;
   endAngle: number;
   color: string;
+  winChance: number;
 };
