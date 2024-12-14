@@ -1,9 +1,9 @@
 <template>
   <div class="container">
     <div class="forms mb-2">
-      <div>
-        <h1>Аукцион</h1>
-      </div>
+      <h1>Аукцион</h1>
+
+      <TypeSelection class="mb-2" v-model="type" @update:model-value="draw" />
       <div class="mb-2">
         <label for="duration">Время</label> &nbsp;
         <input name="duration" id="duration" v-model="duration" type="text" />
@@ -12,7 +12,7 @@
       <div class="lots">
         <template
           v-for="(item, i) in itemsToDraw"
-          :key="item.id + item.value + item.name"
+          :key="item.id + item.value + item.name + type"
         >
           <LotForm
             :lot-data="item"
@@ -51,9 +51,10 @@
 import { onMounted, ref, computed } from "vue";
 import LotForm from "./components/LotForm.vue";
 import demoData from "@/demoData";
-import type { LotData } from "@/types";
+import { AUCTION_TYPE, type LotData } from "@/types";
+import TypeSelection from "./components/TypeSelection.vue";
 
-const duration = ref<number>(1);
+const duration = ref<number>(10);
 const timeLeft = ref<number>(duration.value);
 const wheelStyles = ref();
 const items = ref<LotData[]>([]);
@@ -67,6 +68,7 @@ const speed = ref(1);
 const startTime = ref(0);
 const randomFinalExtention = ref(0);
 const LSKey = "suvs-auc";
+const type = ref(0);
 onMounted(() => {
   canvas.value = document.getElementById("canvas");
   wheel.value = document.getElementById("wheel-content");
@@ -203,7 +205,11 @@ const getRandomRange = () => {
 };
 
 const getAngleForItem = (item: LotData) => {
-  const percents = getWinChance(item);
+  const percents =
+    type.value === AUCTION_TYPE.ILIMINATION
+      ? getEliminationChance(item)
+      : getWinChance(item);
+
   return (360 * percents) / 100;
 };
 
@@ -215,6 +221,23 @@ const getWinChance = (item: LotData) => {
     return acc + current.value;
   }, 0);
   return (item.value * 100) / sum;
+};
+
+const getEliminationChance = (item: LotData) => {
+  if (!item.value) {
+    return 0;
+  }
+  const revertedValue = 1 / item.value;
+
+  const sum = items.value.reduce((acc, current) => {
+    if (current.value) {
+      return acc + 1 / current.value;
+    } else {
+      return acc;
+    }
+  }, 0);
+
+  return (revertedValue / sum) * 100;
 };
 
 function toRadians(deg: number) {

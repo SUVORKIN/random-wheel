@@ -9,3 +9,8 @@ export type LotData = {
   color: string;
   winChance: number;
 };
+
+export enum AUCTION_TYPE {
+  CLASSIC,
+  ILIMINATION,
+}

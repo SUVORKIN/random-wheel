@@ -93,6 +93,12 @@ button.add-item {
   flex-wrap: wrap;
 }
 
+.type-select-fieldset {
+  border-color: #626262;
+  border-style: dashed;
+  font-size: 20px;
+}
+
 .winner {
   text-align: center;
 }
