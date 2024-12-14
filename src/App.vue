@@ -1,16 +1,15 @@
 <template>
-  <div>
-    <h1>Колесо</h1>
-  </div>
-
   <div class="container">
     <div class="forms mb-2">
+      <div>
+        <h1>Аукцион</h1>
+      </div>
       <div class="mb-2">
         <label for="duration">Время</label> &nbsp;
         <input name="duration" id="duration" v-model="duration" type="text" />
         <button class="start" @click="handleStart">Start</button>
       </div>
-      <div class="lots" v-if="items">
+      <div class="lots">
         <template
           v-for="(item, i) in itemsToDraw"
           :key="item.id + item.value + item.name"
@@ -73,7 +72,7 @@ onMounted(() => {
   wheel.value = document.getElementById("wheel-content");
   ctx = canvas.value!.getContext("2d");
   const lsItems = localStorage.getItem(LSKey);
-
+  items.value.push(createItem());
   if (lsItems) {
     items.value = JSON.parse(lsItems);
   }
@@ -182,7 +181,6 @@ const rotate = () => {
   if (t > duration.value && angle < 1) {
     // Колесо остановилось, можно выполнить дополнительные действия
   } else {
-    // Обновляем позицию колеса, например:
     rotateAngle.value += (angle * Math.PI) / 180;
     window.requestAnimationFrame(rotate);
     draw();
@@ -241,7 +239,7 @@ const createItem = (): LotData => {
     startAngle: 0,
     endAngle: 0,
     color: `rgb(${r}, ${g}, ${b})`,
-    winChance: 0,
+    winChance: 100,
   };
 };
 

@@ -47,7 +47,7 @@ button.add-item {
   margin-bottom: 20px;
 }
 .forms {
-  width: 400px;
+  width: auto;
 }
 #wheel-content {
   position: relative;
@@ -79,7 +79,7 @@ button.add-item {
   z-index: 10;
 }
 .container {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   width: 100%;
   justify-content: space-evenly;
