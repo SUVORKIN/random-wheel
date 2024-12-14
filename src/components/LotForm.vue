@@ -4,12 +4,13 @@
     <input :id="lotData.id" v-model="name" type="text" autocomplete="false" />
     <input
       v-model="value"
+      disabled
       :id="value + lotData.id"
       style="width: 100px"
       type="number"
     />
     <span>+</span>
-    <input v-model="add" style="width: 80px" type="number" />
+    <input v-model.trim="add" style="width: 80px" type="number" />
     <button :class="saveButtonClasses" @click="saveChanges">
       <span v-if="!isLast">Сохранить</span>
       <span v-else>Добавить</span>
@@ -46,14 +47,22 @@ const saveChanges = () => {
     emit("change", {
       ...props.lotData,
       name: name.value,
-      value: value.value + add.value,
+      value: Math.max(value.value + add.value, 0),
     });
     add.value = 0;
   }
 };
 const isSaved = ref(true);
-watch([value, add, name], () => {
-  isSaved.value = false;
+watch([value, add, name], ([newValue, newAddition, newName]) => {
+  if (
+    newValue !== props.lotData.value ||
+    newName !== props.lotData.name ||
+    newAddition
+  ) {
+    isSaved.value = false;
+  } else {
+    isSaved.value = true;
+  }
 });
 
 const saveButtonClasses = computed(() => ({

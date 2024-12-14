@@ -32,6 +32,7 @@
 
       <div class="wrapper">
         <div v-if="itemsToDraw.length > 1" class="arrow"></div>
+        <div class="central-image"></div>
         <div id="wheel-content">
           <canvas
             class="canvas"
