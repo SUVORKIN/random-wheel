@@ -4,7 +4,6 @@
     <input :id="lotData.id" v-model="name" type="text" autocomplete="false" />
     <input
       v-model="value"
-      disabled
       :id="value + lotData.id"
       style="width: 100px"
       type="number"

@@ -1,13 +1,20 @@
 <template>
   <div class="container">
     <div class="forms mb-2">
-      <h1>Аукцион</h1>
-
+      <h1>
+        Победитель {{ winner?.name || "" }}
+        <button v-if="winner && !isSpinning" @click="handleRemove(winner?.id)">
+          Удалить
+        </button>
+      </h1>
+      <div :key="itemsToDraw.length"></div>
       <TypeSelection class="mb-2" v-model="type" @update:model-value="draw" />
       <div class="mb-2">
         <label for="duration">Время</label> &nbsp;
         <input name="duration" id="duration" v-model="duration" type="text" />
-        <button class="start" @click="handleStart">Start</button>
+        <button :disabled="isSpinning" class="start" @click="handleStart">
+          Start
+        </button>
       </div>
       <div class="lots">
         <template
@@ -21,17 +28,17 @@
             @remove="handleRemove"
           />
         </template>
-        <button v-if="!items.length" @click="addItem">+</button>
+        <button v-if="!items.length" @click="addItem">
+          Добавить первый лот
+        </button>
       </div>
     </div>
     <div>
-      <div class="winner">
-        <h1>{{ winner?.name || "" }}</h1>
-      </div>
-
       <div class="wrapper">
-        <div v-if="itemsToDraw.length > 1" class="arrow"></div>
-        <div class="central-image"></div>
+        <template v-if="itemsToDraw.length > 1">
+          <div class="arrow"></div>
+          <div class="central-image"></div>
+        </template>
         <div id="wheel-content">
           <canvas
             class="canvas"
@@ -50,7 +57,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
 import LotForm from "./components/LotForm.vue";
-import demoData from "@/demoData";
 import { AUCTION_TYPE, type LotData } from "@/types";
 import TypeSelection from "./components/TypeSelection.vue";
 
@@ -69,14 +75,15 @@ const startTime = ref(0);
 const randomFinalExtention = ref(0);
 const LSKey = "suvs-auc";
 const type = ref(0);
+const isSpinning = ref(false);
 onMounted(() => {
   canvas.value = document.getElementById("canvas");
   wheel.value = document.getElementById("wheel-content");
   ctx = canvas.value!.getContext("2d");
-  const lsItems = localStorage.getItem(LSKey);
+  const LSItems = localStorage.getItem(LSKey);
   items.value.push(createItem());
-  if (lsItems) {
-    items.value = JSON.parse(lsItems);
+  if (LSItems) {
+    items.value = JSON.parse(LSItems);
   }
   if (items) {
     draw();
@@ -92,10 +99,10 @@ const addItem = () => {
 const itemsToDraw = computed(() => {
   let startAngle = rotateAngle.value;
   let endAngle = rotateAngle.value;
-  let drawItems: LotData[] = [];
+  let itemsToDraw: LotData[] = [];
   items.value.forEach((item) => {
     endAngle += getAngleForItem(item);
-    drawItems.push({
+    itemsToDraw.push({
       ...item,
       ...{
         endAngleRad: toRadians(endAngle),
@@ -107,7 +114,7 @@ const itemsToDraw = computed(() => {
     });
     startAngle = endAngle;
   });
-  return drawItems.sort((a, b) => b.value - a.value);
+  return itemsToDraw.sort((a, b) => b.value - a.value);
 });
 
 const handleChange = (lotData: LotData) => {
@@ -117,8 +124,8 @@ const handleChange = (lotData: LotData) => {
     lotData
   );
   addItem();
-  draw();
   saveToLs(items.value);
+  draw();
 };
 
 const handleRemove = (id: string) => {
@@ -126,44 +133,47 @@ const handleRemove = (id: string) => {
     items.value.findIndex((i) => i.id === id),
     1
   );
-  draw();
   saveToLs(items.value);
+  winner.value = null;
+  draw();
 };
 
 const draw = () => {
   const cx = 300;
   const cy = 300;
   const r = 300;
-  itemsToDraw.value.forEach((item) => {
-    if (item.value) {
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, item.startAngleRad, item.endAngleRad);
-      ctx.fillStyle = item.color;
-      ctx.lineTo(cx, cy);
-      ctx.closePath();
-      ctx.fill();
+  if (items.value.length > 1)
+    itemsToDraw.value.forEach((item) => {
+      if (item.value) {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, item.startAngleRad, item.endAngleRad);
+        ctx.fillStyle = item.color;
+        ctx.lineTo(cx, cy);
+        ctx.closePath();
+        ctx.fill();
 
-      //   text
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate((item.startAngleRad + item.endAngleRad) / 2);
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#fff";
+        //   text
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate((item.startAngleRad + item.endAngleRad) / 2);
+        ctx.textAlign = "center";
+        ctx.fillStyle = item.textColor;
 
-      //  add color contrast
-      ctx.font = "16px sans-serif";
-      ctx.fillText(item.name, 140, 5, 190);
-      ctx.restore();
+        //  add color contrast
+        ctx.font = "16px sans-serif";
+        ctx.fillText(item.name, 140, 5, 190);
+        ctx.restore();
 
-      // Winner
-      const isWinner =
-        item.startAngle % 360 <= 270 && item.endAngle % 360 >= 270;
-      if (isWinner) {
-        winner.value = item;
+        // Winner
+        const isWinner =
+          (item.startAngle % 360 <= 270 && item.endAngle % 360 >= 270) ||
+          item.endAngle === 360;
+        if (isWinner) {
+          winner.value = item;
+        }
       }
-    }
-  });
+    });
 };
 
 const handleStart = () => {
@@ -171,7 +181,7 @@ const handleStart = () => {
   maxRotation.value = getRandomRange();
   timeLeft.value = duration.value;
   randomFinalExtention.value = Math.random() * 10;
-
+  isSpinning.value = true;
   rotate();
 };
 
@@ -181,7 +191,7 @@ const rotate = () => {
   let angle = getSpeed(t, maxRotation.value, duration.value);
 
   if (t > duration.value && angle < 1) {
-    // Колесо остановилось, можно выполнить дополнительные действия
+    isSpinning.value = false;
   } else {
     rotateAngle.value += (angle * Math.PI) / 180;
     window.requestAnimationFrame(rotate);
@@ -253,6 +263,7 @@ const getRandomColor = () => {
 
 const createItem = (): LotData => {
   const { r, g, b } = getRandomColor();
+  const luminance = getLuminance(r, g, b);
   return {
     name: "",
     value: 0,
@@ -263,10 +274,19 @@ const createItem = (): LotData => {
     endAngle: 0,
     color: `rgb(${r}, ${g}, ${b})`,
     winChance: 100,
+    textColor: luminance > 0.5 ? "black" : "white",
   };
 };
 
 const saveToLs = (data: LotData[]) => {
   window.localStorage.setItem(LSKey, JSON.stringify(data));
+};
+
+const getLuminance = (r: number, g: number, b: number) => {
+  const a = [r, g, b].map(function (v) {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
 };
 </script>

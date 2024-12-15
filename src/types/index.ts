@@ -8,6 +8,7 @@ export type LotData = {
   endAngle: number;
   color: string;
   winChance: number;
+  textColor: string;
 };
 
 export enum AUCTION_TYPE {
