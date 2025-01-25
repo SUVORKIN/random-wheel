@@ -46,13 +46,16 @@ button.add-item {
 .mb-2 {
   margin-bottom: 20px;
 }
+.mr-2 {
+  margin-right: 20px;
+}
 .forms {
   width: auto;
 }
 #wheel-content {
   position: relative;
-  width: 600px;
-  height: 600px;
+  width: 800px;
+  height: 800px;
 }
 
 .canvas {
@@ -97,6 +100,11 @@ button.add-item {
   border-color: #626262;
   border-style: dashed;
   font-size: 20px;
+}
+
+.d-flex {
+  display: flex;
+  align-items: center;
 }
 
 .winner {

@@ -1,20 +1,23 @@
 <template>
   <div class="container">
     <div class="forms mb-2">
-      <h1>
-        Победитель {{ winner?.name || "" }}
-        <button v-if="winner && !isSpinning" @click="handleRemove(winner?.id)">
-          Удалить
-        </button>
-      </h1>
-      <div :key="itemsToDraw.length"></div>
       <TypeSelection class="mb-2" v-model="type" @update:model-value="draw" />
+      <Timer class="mb-2" />
       <div class="mb-2">
-        <label for="duration">Время</label> &nbsp;
-        <input name="duration" id="duration" v-model="duration" type="text" />
-        <button :disabled="isSpinning" class="start" @click="handleStart">
-          Start
-        </button>
+        <div>
+          <div>
+            <label for="duration">Время</label> &nbsp;
+            <input
+              name="duration"
+              id="duration"
+              v-model="duration"
+              type="text"
+            />
+            <button :disabled="isSpinning" class="start" @click="handleStart">
+              Крутить
+            </button>
+          </div>
+        </div>
       </div>
       <div class="lots">
         <template
@@ -44,8 +47,8 @@
             class="canvas"
             ref="canvas"
             id="canvas"
-            width="600"
-            height="600"
+            width="800"
+            height="800"
             :style="wheelStyles"
           ></canvas>
         </div>
@@ -59,6 +62,7 @@ import { onMounted, ref, computed } from "vue";
 import LotForm from "./components/LotForm.vue";
 import { AUCTION_TYPE, type LotData } from "@/types";
 import TypeSelection from "./components/TypeSelection.vue";
+import Timer from "./components/Timer.vue";
 
 const duration = ref<number>(10);
 const timeLeft = ref<number>(duration.value);
@@ -139,9 +143,9 @@ const handleRemove = (id: string) => {
 };
 
 const draw = () => {
-  const cx = 300;
-  const cy = 300;
-  const r = 300;
+  const cx = 400;
+  const cy = 400;
+  const r = 400;
   if (items.value.length > 1)
     itemsToDraw.value.forEach((item) => {
       if (item.value) {
