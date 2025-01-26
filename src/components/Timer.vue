@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
 .time-input {
   height: 80px;
   width: 100px;
-  font-size: 27px;
+  font-size: 44px;
   text-align: center;
 }
 
