@@ -1,56 +1,72 @@
 <template>
-  <div class="container">
-    <div class="forms mb-2">
-      <TypeSelection class="mb-2" v-model="type" @update:model-value="draw" />
-      <Timer class="mb-2" />
-      <div class="mb-2">
-        <div>
+  <div>
+    <h1>Колесный аукцион</h1>
+    <div class="app-content">
+      <div class="forms mb-2 mr-2">
+        <TypeSelection class="mb-2" v-model="type" @update:model-value="draw" />
+        <Timer class="mb-2" />
+        <div class="mb-2">
           <div>
-            <label for="duration">Время</label> &nbsp;
-            <input
-              name="duration"
-              id="duration"
-              v-model="duration"
-              type="text"
-            />
-            <button :disabled="isSpinning" class="start" @click="handleStart">
-              Крутить
-            </button>
+            <div>
+              <label for="duration">Время вращения в секундах</label> &nbsp;
+              <input
+                name="duration"
+                id="duration"
+                v-model="duration"
+                type="text"
+              />
+              <button :disabled="isSpinning" class="start" @click="handleStart">
+                Крутить колесо
+              </button>
+            </div>
           </div>
         </div>
+        <div class="lots">
+          <template
+            v-for="(item, i) in itemsToDraw"
+            :key="item.id + item.value + item.name + type"
+          >
+            <LotForm
+              :lot-data="item"
+              :is-last="i === items.length - 1"
+              :isHighlighted="winner?.id === item.id"
+              @change="handleChange"
+              @remove="handleRemove"
+            />
+          </template>
+          <button v-if="!items.length" @click="addItem">
+            Добавить первый лот
+          </button>
+        </div>
       </div>
-      <div class="lots">
-        <template
-          v-for="(item, i) in itemsToDraw"
-          :key="item.id + item.value + item.name + type"
-        >
-          <LotForm
-            :lot-data="item"
-            :is-last="i === items.length - 1"
-            @change="handleChange"
-            @remove="handleRemove"
-          />
-        </template>
-        <button v-if="!items.length" @click="addItem">
-          Добавить первый лот
-        </button>
-      </div>
-    </div>
-    <div>
-      <div class="wrapper">
-        <template v-if="itemsToDraw.length > 1">
-          <div class="arrow"></div>
-          <div class="central-image"></div>
-        </template>
-        <div id="wheel-content">
-          <canvas
-            class="canvas"
-            ref="canvas"
-            id="canvas"
-            width="800"
-            height="800"
-            :style="wheelStyles"
-          ></canvas>
+      <div class="wheel-content">
+        <div class="winner d-flex">
+          <h1 class="mr-2">
+            {{ winner?.name || "" }}
+          </h1>
+          <button
+            v-if="winner && !isSpinning && type === 1"
+            @click="handleRemove(winner?.id)"
+          >
+            Удалить
+          </button>
+        </div>
+
+        <div class="wheel-wrapper">
+          <template v-if="itemsToDraw.length > 1">
+            <div class="arrow"></div>
+            <div class="outer-arrow"></div>
+            <div class="central-image"></div>
+          </template>
+          <div id="wheel">
+            <canvas
+              class="canvas"
+              ref="canvas"
+              id="canvas"
+              :width="WHEEL_DIAMETER"
+              :height="WHEEL_DIAMETER"
+            ></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -64,14 +80,14 @@ import { AUCTION_TYPE, type LotData } from "@/types";
 import TypeSelection from "./components/TypeSelection.vue";
 import Timer from "./components/Timer.vue";
 
+const WHEEL_RADIUS = 350;
+const WHEEL_DIAMETER = WHEEL_RADIUS * 2;
 const duration = ref<number>(10);
 const timeLeft = ref<number>(duration.value);
-const wheelStyles = ref();
 const items = ref<LotData[]>([]);
 const winner = ref<LotData | null>(null);
 const rotateAngle = ref(0);
 const maxRotation = ref(0);
-let ctx = {} as CanvasRenderingContext2D;
 const canvas = ref<any | null>(); /* HTMLElement */
 const wheel = ref<any | null>(); /* HTMLElement */
 const speed = ref(1);
@@ -80,9 +96,11 @@ const randomFinalExtention = ref(0);
 const LSKey = "suvs-auc";
 const type = ref(0);
 const isSpinning = ref(false);
+let ctx = {} as CanvasRenderingContext2D;
+
 onMounted(() => {
   canvas.value = document.getElementById("canvas");
-  wheel.value = document.getElementById("wheel-content");
+  wheel.value = document.getElementById("wheel");
   ctx = canvas.value!.getContext("2d");
   const LSItems = localStorage.getItem(LSKey);
   items.value.push(createItem());
@@ -143,9 +161,9 @@ const handleRemove = (id: string) => {
 };
 
 const draw = () => {
-  const cx = 400;
-  const cy = 400;
-  const r = 400;
+  const cx = 350;
+  const cy = 350;
+  const r = WHEEL_RADIUS;
   if (items.value.length > 1)
     itemsToDraw.value.forEach((item) => {
       if (item.value) {

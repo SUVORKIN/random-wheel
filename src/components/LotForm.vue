@@ -1,5 +1,5 @@
 <template>
-  <div class="lot-form">
+  <div class="lot-form" :class="{ highlighted: isHighlighted }">
     <div style="min-width: 40px">{{ Math.floor(lotData.winChance) }}%</div>
     <input :id="lotData.id" v-model="name" type="text" autocomplete="false" />
     <input
@@ -9,7 +9,12 @@
       type="number"
     />
     <span>+</span>
-    <input v-model.trim="add" style="width: 80px" type="number" />
+    <input
+      v-model.trim="add"
+      style="width: 80px"
+      type="number"
+      :id="lotData.id + 'addendum'"
+    />
     <button :class="saveButtonClasses" @click="saveChanges">
       <span v-if="!isLast">Сохранить</span>
       <span v-else>Добавить</span>
@@ -27,6 +32,7 @@ import type { LotData } from "@/types";
 const props = defineProps<{
   lotData: LotData;
   isLast: boolean;
+  isHighlighted: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -73,6 +79,11 @@ const saveButtonClasses = computed(() => ({
 <style scoped>
 .lot-form {
   display: flex;
+  padding: 2px;
   align-items: center;
+}
+
+.highlighted {
+  outline: 2px solid #ff6767;
 }
 </style>
